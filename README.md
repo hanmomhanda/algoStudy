@@ -1,2 +1,2 @@
 # algoStudy
-알고리듬 스터디
+JavaScript로 구현하는 알고리듬 스터디
