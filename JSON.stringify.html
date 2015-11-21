@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head lang="ko">
+<meta charset="UTF-8">
+</head>
+<body>
+<script>
+var stringify = (function(JSON) {    
+    var specialValues = ['[', ']', '{', '}', ':', ',', 'undefined'],
+        specialMap = {};
+    var Special = function(val) { this.v = (val === 'undefined' ? undefined : val); };
+    Array.prototype.map.call(specialValues, function(v) {
+        specialMap[v] = new Special(v);
+    });    
+    
+    var enclose = function(v, encloser) {
+        if (!encloser || encloser.length > 2) throw Error;
+        return encloser[0] + v + (encloser[1] || encloser[0]);
+    };
+    
+    var addComma = function(num, stack) {
+        if (num > 0) stack.push(specialMap[',']);
+    };
+    
+    var unfunction = function(obj) {
+        return obj instanceof Function ? undefined : obj;
+    };
+    
+    var primDeco = function(v) {
+        switch (typeof v) {
+            case 'number': return isFinite(v) ? v : null;
+            case 'string': return enclose(v.replace(/"/g, '\\"'), '"');
+            default: return v;
+        }
+    };
+    
+    return function(obj) {       
+        var stack = [obj], tmp, len, keys, result = '';
+        while ((tmp = stack.pop()) !== undefined) {
+            if (tmp instanceof Special) result += tmp.v;            
+            else if (tmp instanceof Date) stack.push(tmp.toJSON());
+            else if (tmp instanceof RegExp) stack.push(specialMap['}'], specialMap['{']);
+            else if (tmp instanceof Function) stack.push(specialMap['undefined']);
+            else if (Object.prototype.toString.call(tmp) === '[object Array]') {
+                stack.push(specialMap[']']);
+                len = tmp.length;
+                while (len--) {
+                    stack.push(unfunction(tmp[len]) === undefined ? null : tmp[len]);   
+                    addComma(len, stack);
+                }
+                stack.push(specialMap['[']);                
+            }
+            else if (Object.prototype.toString.call(tmp) === '[object Object]') {
+                stack.push(specialMap['}']);
+                keys = Object.keys(tmp);
+                len = keys.length;
+                while (len--) {
+                    if (unfunction(tmp[keys[len]]) !== undefined) {
+                        stack.push(tmp[keys[len]], specialMap[':'], keys[len]);
+                        addComma(len, stack);
+                    }                    
+                }
+                stack.push(specialMap['{']);
+            }
+            else {
+                result += primDeco(tmp);
+            }            
+        }
+        return result;        
+    };
+})(null);
+
+var testV = {
+    a: 'a',
+    b: "b",
+    c: '1"2"3',
+    d: "a\'b\'c\"",
+    e: "a'b'c",
+    f: '{f}',
+    g: '[g]',
+    '{}': '{}',
+    '{': '{',
+    '}': '}',
+    "[]": "[]",
+    '[': '[',
+    "]": ']',
+    '[]':[],
+    '{}':{},
+    '"': '"',
+    "'": "'",
+    '\"': '\"',
+    "\'": "\'",
+    '-1': -1,
+    0: 0,
+    3: 3,
+    NaN: NaN,
+    Infinity: Infinity,
+    true: true,
+    boolean: false,
+    undefined: undefined,    
+    null: null,    
+    date: new Date,
+    '/abc/': /[abc]/,    
+    function: function() {},    
+    obj1: {
+        a: 'a',
+        b: "b",
+        c: '1"2"3',
+        d: "a\'b\'c\"",
+        e: "a'b'c",
+        f: '{f}',
+        g: '[g]',
+        '{}': '{}',
+        '{': '{',
+        '}': '}',
+        "[]": "[]",
+        '[': '[',
+        "]": ']',
+        '[]':[],
+        '{}':{},
+        '"': '"',
+        "'": "'",
+        '\"': '\"',
+        "\'": "\'",
+        '-1': -1,
+        0: 0,
+        3: 3,
+        NaN: NaN,
+        Infinity: Infinity,
+        true: true,
+        boolean: false,
+        undefined: undefined,    
+        null: null,    
+        date: new Date,
+        '/abc/': /[abc]/,    
+        function: function() {}
+    },
+    arr00: [],
+    arr01: [0],
+    arr02: [[[[[0]]]]],
+    arr03: [-1, 2, 3, 4],
+    arr04: [[-1, 2], 3, 4],
+    arr05: [-1, [2, 3], 4],
+    arr06: [-1, 2, [3, 4]],
+    arr07: [-1, 2, 3, [4]],
+    arr08: [-1, 2, [3], 4],
+    arr09: [1, 2, 3, [-4, [5, 6], 7]],
+    arr10: [1, 2, 3, [4, [-5, -6]], [7, 8]],
+    arr11: [1, 2, 3, [4, [5, 6]], [7, 8], [[[[[9]]]], 10]],
+    arr12: [1, 2, 3, [4, [5, 6]], [7, 8], [9, 10]],
+    arr13: [undefined, NaN, Infinity, null],
+    arr14: [{undefined: undefined}, 0, NaN, undefined, Infinity, null, {arr: []}],
+    arr15: [{
+        a: 'a',
+        b: "b",
+        c: '1"2"3',
+        d: "a\'b\'c\"",
+        e: "a'b'c",
+        f: '{f}',
+        g: '[g]',
+        '{}': '{}',
+        '{': '{',
+        '}': '}',
+        "[]": "[]",
+        '[': '[',
+        "]": ']',
+        '[]':[],
+        '{}':{},
+        '"': '"',
+        "'": "'",
+        '\"': '\"',
+        "\'": "\'",
+        '-1': -1,
+        0: 0,
+        3: 3,
+        NaN: NaN,
+        Infinity: Infinity,
+        true: true,
+        boolean: false,
+        undefined: undefined,    
+        null: null,    
+        date: new Date,
+        '/abc/': /[abc]/,    
+        function: function() {}
+    }]
+};
+var testArr = [
+    testV, function() {}, {}, [], [{}], [{}, {}]
+];
+Array.prototype.map.call(testArr, function(v) {
+    var myresult = stringify(v);
+    var JSONresult = JSON.stringify(v);
+    var tf = (myresult === JSONresult);
+    document.write('<h1>' + (tf ? '<font color="green">' : '<font color="red">') + tf + '</font>' + '</h1>');
+    document.write('<h3>' + 'MYstringify' + '</h3>');
+    document.write('<h5>' + myresult + '</h5>');
+    document.write('<h3>' + 'JSON.stringify' + '</h3>');
+    document.write('<h5>' + JSONresult + '</h5>');
+    document.write('<hr/>');
+});    
+</script>
+</body>
+</html>
