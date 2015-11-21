@@ -36,6 +36,7 @@ var stringify = (function(JSON) {
     
     return function(obj) {       
         var stack = [obj], tmp, len, keys, result = '';
+        if (obj instanceof Function) return undefined;
         while ((tmp = stack.pop()) !== undefined) {
             if (tmp instanceof Special) result += tmp.v;            
             else if (tmp instanceof Date) stack.push(tmp.toJSON());
