@@ -186,7 +186,11 @@ var testV = {
     ]
 };
 var testArr = [
-    testV, function() {}, {}, [], [{}], [{}, {}]
+    testV,
+    {'[]':[]},
+    {'{}':{}},
+    function() {},
+    {}, [], [{}], [{}, {}]
 ];
 Array.prototype.map.call(testArr, function(v) {
     var myresult = stringify(v);
