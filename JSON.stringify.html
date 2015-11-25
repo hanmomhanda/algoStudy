@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head lang="ko">
-<meta charset="UTF-8">
+<meta charset="Uresult-8">
 </head>
 <body>
 <script>
-var stringify = (function(JSON) {    
+var stringify = (function(JSON) {
     var specialValues = ['[', ']', '{', '}', ':', ',', 'undefined'],
         specialMap = {};
     var Special = function(val) { this.v = (val === 'undefined' ? undefined : val); };
     Array.prototype.map.call(specialValues, function(v) {
         specialMap[v] = new Special(v);
-    });    
-    
+    });
+
     var enclose = function(v, encloser) {
         if (!encloser || encloser.length > 2) throw Error;
         return encloser[0] + v + (encloser[1] || encloser[0]);
     };
-    
+
     var addComma = function(num, stack) {
         if (num > 0) stack.push(specialMap[',']);
     };
-    
+
     var unfunction = function(obj) {
         return obj instanceof Function ? undefined : obj;
     };
-    
+
     var primDeco = function(v) {
         switch (typeof v) {
             case 'number': return isFinite(v) ? v : null;
@@ -33,12 +33,12 @@ var stringify = (function(JSON) {
             default: return v;
         }
     };
-    
-    return function(obj) {       
+
+    return function(obj) {
         var stack = [obj], tmp, len, keys, result = '';
         if (obj instanceof Function) return undefined;
         while ((tmp = stack.pop()) !== undefined) {
-            if (tmp instanceof Special) result += tmp.v;            
+            if (tmp instanceof Special) result += tmp.v;
             else if (tmp instanceof Date) stack.push(tmp.toJSON());
             else if (tmp instanceof RegExp) stack.push(specialMap['}'], specialMap['{']);
             else if (tmp instanceof Function) stack.push(specialMap['undefined']);
@@ -46,10 +46,10 @@ var stringify = (function(JSON) {
                 stack.push(specialMap[']']);
                 len = tmp.length;
                 while (len--) {
-                    stack.push(unfunction(tmp[len]) === undefined ? null : tmp[len]);   
+                    stack.push(unfunction(tmp[len]) === undefined ? null : tmp[len]);
                     addComma(len, stack);
                 }
-                stack.push(specialMap['[']);                
+                stack.push(specialMap['[']);
             }
             else if (Object.prototype.toString.call(tmp) === '[object Object]') {
                 stack.push(specialMap['}']);
@@ -59,15 +59,15 @@ var stringify = (function(JSON) {
                     if (unfunction(tmp[keys[len]]) !== undefined) {
                         stack.push(tmp[keys[len]], specialMap[':'], keys[len]);
                         addComma(len, stack);
-                    }                    
+                    }
                 }
                 stack.push(specialMap['{']);
             }
             else {
                 result += primDeco(tmp);
-            }            
+            }
         }
-        return result;        
+        return result;
     };
 })(null);
 
@@ -98,11 +98,11 @@ var testV = {
     Infinity: Infinity,
     true: true,
     boolean: false,
-    undefined: undefined,    
-    null: null,    
+    undefined: undefined,
+    null: null,
     date: new Date,
-    '/abc/': /[abc]/,    
-    function: function() {},    
+    '/abc/': /[abc]/,
+    function: function() {},
     obj1: {
         a: 'a',
         b: "b",
@@ -130,10 +130,10 @@ var testV = {
         Infinity: Infinity,
         true: true,
         boolean: false,
-        undefined: undefined,    
-        null: null,    
+        undefined: undefined,
+        null: null,
         date: new Date,
-        '/abc/': /[abc]/,    
+        '/abc/': /[abc]/,
         function: function() {}
     },
     arr00: [],
@@ -178,10 +178,10 @@ var testV = {
         Infinity,
         true,
         false,
-        undefined,    
-        null,    
+        undefined,
+        null,
         new Date,
-        /[abc]/,    
+        /[abc]/,
         function() {}
     ]
 };
@@ -191,14 +191,15 @@ var testArr = [
 Array.prototype.map.call(testArr, function(v) {
     var myresult = stringify(v);
     var JSONresult = JSON.stringify(v);
-    var tf = (myresult === JSONresult);
-    document.write('<h1>' + (tf ? '<font color="green">' : '<font color="red">') + tf + '</font>' + '</h1>');
+    var result = (myresult === JSONresult ? 'PASS' : 'FAIL');
+    document.write('<h1>' + (result ? '<font color="green">' : '<font color="red">') + result + '</font>' + '</h1>');
+    document.write('<h2><font color="blue">' + (v instanceof Function ? v : JSON.stringify(v)) + '</font></h2>');
     document.write('<h3>' + 'MYstringify' + '</h3>');
     document.write('<h5>' + myresult + '</h5>');
     document.write('<h3>' + 'JSON.stringify' + '</h3>');
     document.write('<h5>' + JSONresult + '</h5>');
     document.write('<hr/>');
-});    
+});
 </script>
 </body>
 </html>
