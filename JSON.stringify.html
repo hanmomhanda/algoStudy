@@ -191,8 +191,8 @@ var testArr = [
 Array.prototype.map.call(testArr, function(v) {
     var myresult = stringify(v);
     var JSONresult = JSON.stringify(v);
-    var result = (myresult === JSONresult ? 'PASS' : 'FAIL');
-    document.write('<h1>' + (result ? '<font color="green">' : '<font color="red">') + result + '</font>' + '</h1>');
+    var result = myresult === JSONresult;
+    document.write('<h1>' + (result ? '<font color="green">PASS' : '<font color="red">FAIL') + '</font>' + '</h1>');
     document.write('<h2><font color="blue">' + (v instanceof Function ? v : JSON.stringify(v)) + '</font></h2>');
     document.write('<h3>' + 'MYstringify' + '</h3>');
     document.write('<h5>' + myresult + '</h5>');
